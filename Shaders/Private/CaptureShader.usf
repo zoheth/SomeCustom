@@ -1,0 +1,20 @@
+#include "/Engine/Public/Platform.ush"
+
+Texture2D SourceTexture;
+SamplerState SourceTextureSampler;
+
+RWStructuredBuffer<uint> OutputColorBuffer;
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 ThreadID : SV_DispatchThreadID)
+{
+    if (ThreadID.x >= 640 || ThreadID.y >= 480)
+        return;
+    
+    float4 color = SourceTexture.SampleLevel(SourceTextureSampler, float2(ThreadID.x / 640.0, ThreadID.y / 480.0), 0);
+    uint4 packedColor = uint4(color * 255.0);
+    packedColor.a = 255;
+    uint packedRGB = (packedColor.a << 24) | (packedColor.b << 16) | (packedColor.g << 8) | packedColor.r;
+
+    OutputColorBuffer[ThreadID.y * 640 + ThreadID.x] = packedRGB;
+}

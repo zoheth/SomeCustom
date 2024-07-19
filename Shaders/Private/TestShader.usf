@@ -1,0 +1,44 @@
+#include "/Engine/Public/Platform.ush"
+
+// cbuffer
+float4 MyColor;
+Texture2D SourceTexture;
+SamplerState SourceTextureSampler;
+
+void MainVS(
+    in uint VertexID : SV_VertexID,
+    out float4 OutPosition : SV_Position,
+	out float2 OutTexCoord : TEXCOORD0
+)
+{
+    // Define positions for a full-screen quad (NDC)
+    float2 positions[4] =
+    {
+        float2(-1.0f, -1.0f), // Bottom-left
+        float2(-1.0f, 1.0f), // Top-left
+        float2(1.0f, -1.0f), // Bottom-right
+        float2(1.0f, 1.0f) // Top-right
+    };
+    
+    // Define texture coordinates for a full-screen quad
+    float2 texCoords[4] =
+    {
+        float2(0.0f, 1.0f), // Bottom-left
+        float2(0.0f, 0.0f), // Top-left
+        float2(1.0f, 1.0f), // Bottom-right
+        float2(1.0f, 0.0f) // Top-right
+    };
+    
+    OutPosition = float4(positions[VertexID], 0.0f, 1.0f);
+    OutTexCoord = texCoords[VertexID];
+}
+
+void MainPS(
+    in float4 InPosition : SV_Position,
+	in float2 InTexCoord : TEXCOORD0,
+    out float4 Output : SV_Target0
+)
+{
+    float4 Color = SourceTexture.Sample(SourceTextureSampler, InTexCoord);
+    Output = InPosition * Color / 256;
+}
